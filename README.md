@@ -1,2 +1,8 @@
-# Seven-Databases-in-Seven-Weeks
-[Reading Notes] Book: Seven Databases in Seven Weeks
+# Seven Databases in Seven Weeks: A Guide to Modern Databases and the NoSQL Movement 2nd Edition
+The book: https://amzn.to/3GQqrmF
+
+<p align="center">
+    <img src="./.assets/book_cover.jpg" />
+</p>
+
+## [Reading Notes]
