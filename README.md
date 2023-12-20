@@ -6,3 +6,5 @@ The book: https://amzn.to/3GQqrmF
 </p>
 
 ## [Reading Notes]
+
+- [Postgres - Day 1](./01-Postgres.md)
