@@ -85,6 +85,11 @@ select * from books inner join authors on books.author_id = authors.id;
 select * from books left outer join authors on books.author_id = authors.id;
 select * from books right outer join authors on books.author_id = authors.id;
 
+/* indexes */
+
+create index books_date on books (published_at);
+create index books_author_2 on books using btree (column);
+create index books_author_3 on books using hash (column);
 
 ```
 
@@ -102,16 +107,42 @@ Another good standard index in which each index value is unique; hash indexes te
 
 ### Find
 
-- Find the PostgreSQL documentation online and bookmark it.
-- Acquaint yourself with the command-line \? and \h output.
-- We briefly mentioned the MATCH FULL constraint. Find some information on the other available types of MATCH constraints.
+- OK - Find the PostgreSQL documentation online and bookmark it.
+- OK - Acquaint yourself with the command-line \? and \h output.
+- OK - We briefly mentioned the MATCH FULL constraint. Find some information on the other available types of MATCH constraints.
 
 ### Do
 
-- Select all the tables we created (and only those) from pg_class and examine the table to get a sense of what kinds of metadata Postgres stores about tables.
-- Write a query that finds the country name of the Fight Club event.
-- Alter the venues table such that it contains a Boolean column called active with a default value of TRUE.
-- Understand better about the types of indexes for RDBMS
-- Understand the B-tree and its function well
-- Understand the Hash index and its function well
+- OK - Select all the tables we created (and only those) from pg_class and examine the table to get a sense of what kinds of metadata Postgres stores about tables.
+- OK - Write a query that finds the country name of the Fight Club event.
+- OK - Alter the venues table such that it contains a Boolean column called active with a default value of TRUE.
+- OK - Understand better about the types of indexes for RDBMS
+- OK - Understand the B-tree and its function well
+- OK - Understand the Hash index and its function well
+
+## Notes
+
+#### Index types
+
+In PostgreSQL, several types of indexes are available, each serving a specific use case. Understanding when to use each type of index is crucial for optimizing database performance. Here's a brief overview:
+
+- B-tree Indexes: The most common type of index in PostgreSQL. They are efficient for equality and range queries. You should use B-tree indexes for columns that are often used in comparison operations (like =, <, >, <=, >=) and in ORDER BY clauses.
+
+- Hash Indexes: Suitable for simple equality comparisons. They can be more efficient than B-tree for these types of operations, but they don't support range queries. Use hash indexes for columns where you only perform equality comparisons (=).
+
+- GiST (Generalized Search Tree) Indexes: These are versatile and can support various types of searches, including multi-dimensional data and complex types like polygons. GiST indexes are ideal for spatial data (used with PostGIS), full-text search, and overlapping ranges.
+
+- GIN (Generalized Inverted Index) Indexes: Useful for indexing composite values where an item can be part of multiple values. They are typically used for full-text search and indexing array data. Use GIN indexes when you need to index elements within composite types like arrays or JSONB.
+
+- BRIN (Block Range INdexes): Designed for very large tables where data is naturally ordered. They store summaries of values in blocks of rows. BRIN indexes are suitable for large datasets where the data has some natural correlation with physical storage order, like timestamps on a logging table.
+
+- SP-GiST (Space-Partitioned Generalized Search Tree) Indexes: These are for partitioning data into a non-overlapping space. They are useful for data that doesn't fit well into a B-tree structure, like tree structures or partitioned data.
+
+- Bloom Filters: A probabilistic data structure that can efficiently test whether an element is part of a set. They are used for compactly representing a set of values, primarily when you have many indexable columns and queries that test these columns in various combinations.
+
+When choosing an index type, consider factors like the size and type of data, the nature of queries (equality, range, pattern matching, etc.), and the frequency of data modification. Proper indexing can significantly improve query performance, but it's also important to avoid over-indexing, as this can lead to increased storage requirements and slower write operations.
+
+#### Match types
+
+A value inserted into the referencing column(s) is matched against the values of the referenced table and referenced columns using the given match type. There are three match types: MATCH FULL, MATCH PARTIAL, and MATCH SIMPLE (which is the default). MATCH FULL will not allow one column of a multicolumn foreign key to be null unless all foreign key columns are null; if they are all null, the row is not required to have a match in the referenced table. MATCH SIMPLE allows any of the foreign key columns to be null; if any of them are null, the row is not required to have a match in the referenced table. MATCH PARTIAL is not yet implemented. (Of course, NOT NULL constraints can be applied to the referencing column(s) to prevent these cases from arising.)
 
