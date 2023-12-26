@@ -7,7 +7,7 @@ docker run --name my-local-postgres -p 5432:5432 -e POSTGRES_PASSWORD=tops3cr3tp
 
 ![Alt text](./.assets/image.png)
 
-## Day 1
+# Day 1
 
 Playground:
 ```sql
@@ -146,3 +146,51 @@ When choosing an index type, consider factors like the size and type of data, th
 
 A value inserted into the referencing column(s) is matched against the values of the referenced table and referenced columns using the given match type. There are three match types: MATCH FULL, MATCH PARTIAL, and MATCH SIMPLE (which is the default). MATCH FULL will not allow one column of a multicolumn foreign key to be null unless all foreign key columns are null; if they are all null, the row is not required to have a match in the referenced table. MATCH SIMPLE allows any of the foreign key columns to be null; if any of them are null, the row is not required to have a match in the referenced table. MATCH PARTIAL is not yet implemented. (Of course, NOT NULL constraints can be applied to the referencing column(s) to prevent these cases from arising.)
 
+# Day 2
+
+## Aggregate functions
+
+A more readable way of inserting relations:
+
+```sql
+INSERT INTO books 
+    (code, title, published_at, description, author_id, publisher_code) 
+VALUES
+    (130, 'Another Evans` book', '2021-01-01', 'Testing...',        
+        (select id from authors where name = 'Eric Evans'), 
+    'ADD');
+```
+
+Simple count aggregate functiom:
+
+```sql
+select count(*) from books;
+```
+
+There other aggregate functions like: sum, avg, min, max, etc.
+
+Grouping data:
+
+```sql
+select author_id, count(*) from books group by author_id;
+```
+
+Filtering after gouping with HAVING:
+    
+```sql
+select
+    author_id, a.name, count(*) as qtd
+from books
+    inner join authors a
+        on books.author_id = a.id
+group by
+    author_id, a.name, author_id
+having
+    count(*) > 1;
+```
+
+Also, there is the distinct keyword to remove duplicates:
+
+```sql
+select distinct author_id from books;
+```
