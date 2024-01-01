@@ -194,3 +194,86 @@ Also, there is the distinct keyword to remove duplicates:
 ```sql
 select distinct author_id from books;
 ```
+
+### Transactions
+
+Transactions are the bulwark of relational database consistency. All or nothing, that’s the transaction motto. Transactions ensure that every command of a set is executed. If anything fails along the way, all of the commands are rolled back as if they never happened.
+
+PostgreSQL transactions follow ACID compliance, which stands for:
+
+- Atomic (either all operations succeed or none do)
+- Consistent (the data will always be in a good state and never in an inconsistent state)
+- Isolated (transactions don’t interfere with one another)
+- Durable (a committed transaction is safe, even after a server crash)
+
+### Stored Procedures
+
+Every command we’ve seen until now has been declarative in the sense that we‘ve been able to get our desired result set using just SQL (which is quite powerful in itself). But sometimes the database doesn‘t give us everything we need natively and we need to run some code to fill in the gaps. At that point, though, you need to decide where the code is going to run. Should it run in Postgres or should it run on the application side?
+
+```sql
+CREATE​ ​OR​ ​REPLACE​ ​FUNCTION​ add_event(
+​ 	  title ​text​,
+​ 	  ​starts​ ​timestamp​,
+​ 	  ​ends​ ​timestamp​,
+​ 	  venue ​text​,
+​ 	  postal ​varchar​(9),
+​ 	  country ​char​(2))
+​ 	​RETURNS​ ​boolean​ ​AS​ ​$$​
+​ 	​DECLARE​
+​ 	  did_insert ​boolean​ := ​false​;
+​ 	  found_count ​integer​;
+​ 	  the_venue_id ​integer​;
+​ 	​BEGIN​
+​ 	  ​SELECT​ venue_id ​INTO​ the_venue_id
+​ 	  ​FROM​ venues v
+​ 	  ​WHERE​ v.postal_code=postal ​AND​ v.country_code=country ​AND​ v.​name​ ILIKE venue
+​ 	  ​LIMIT​ 1;
+​ 	
+​ 	  ​IF​ the_venue_id ​IS​ ​NULL​ ​THEN​
+​ 	    ​INSERT​ ​INTO​ venues (​name​, postal_code, country_code)
+​ 	    ​VALUES​ (venue, postal, country)
+​ 	    RETURNING venue_id ​INTO​ the_venue_id;
+​ 	
+​ 	    did_insert := ​true​;
+​ 	  ​END​ ​IF​;
+​ 	
+​ 	  ​-- Note: this is a notice, not an error as in some programming languages​
+​ 	  RAISE NOTICE ​'Venue found %'​, the_venue_id;
+​ 	
+​ 	  ​INSERT​ ​INTO​ ​events​ (title, ​starts​, ​ends​, venue_id)
+​ 	  ​VALUES​ (title, ​starts​, ​ends​, the_venue_id);
+​ 	
+​ 	  ​RETURN​ did_insert;
+​ 	​END​;
+​ 	​$$​ ​LANGUAGE​ plpgsql;
+```
+
+### Pull the Triggers
+
+Triggers automatically fire stored procedures when some event happens, such as an insert or update. They allow the database to enforce some required behavior in response to changing data.
+
+```sql
+​ 	​CREATE​ ​TABLE​ ​logs​ (
+​ 	  event_id ​integer​,
+​ 	  old_title ​varchar​(255),
+​ 	  old_starts ​timestamp​,
+​ 	  old_ends ​timestamp​,
+​ 	  logged_at ​timestamp​ ​DEFAULT​ ​current_timestamp​
+​ 	);
+
+/* LOG_EVENT.SQL */
+CREATE​ ​OR​ ​REPLACE​ ​FUNCTION​ log_event() ​RETURNS​ ​trigger​ ​AS​ ​$$​
+​ 	​DECLARE​
+​ 	​BEGIN​
+​ 	  ​INSERT​ ​INTO​ ​logs​ (event_id, old_title, old_starts, old_ends)
+​ 	  ​VALUES​ (OLD.event_id, OLD.title, OLD.​starts​, OLD.​ends​);
+​ 	  RAISE NOTICE ​'Someone just changed event #%'​, OLD.event_id;
+​ 	  ​RETURN​ ​NEW​;
+​ 	​END​;
+​ 	​$$​ ​LANGUAGE​ plpgsql;
+
+/* CREATE TRIGGER */
+​ 	​CREATE​ ​TRIGGER​ log_events
+​ 	  ​AFTER​ ​UPDATE​ ​ON​ ​events​
+​ 	  ​FOR​ ​EACH​ ​ROW​ ​EXECUTE​ ​PROCEDURE​ log_event();
+```

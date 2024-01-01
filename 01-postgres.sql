@@ -106,3 +106,11 @@ having
     count(*) > 1;
 
 select distinct author_id from books;
+
+/* transactions */
+
+begin transaction;
+    delete from notes;
+rollback;
+
+select * from notes
