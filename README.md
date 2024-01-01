@@ -7,4 +7,4 @@ The book: https://amzn.to/3GQqrmF
 
 ## [Reading Notes]
 
-- [Postgres - Day 1](./01-Postgres.md)
+- [Postgres - Days 1/2/3](./01-Postgres.md)
