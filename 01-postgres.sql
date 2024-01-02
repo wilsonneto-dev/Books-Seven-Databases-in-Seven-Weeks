@@ -77,7 +77,7 @@ values
 
 select * from books;
 select * from authors;
-select * from books inner join authors on books.author_id = authors.id;
+select authors.name, books.title from books inner join authors on books.author_id = authors.id;
 select * from books left outer join authors on books.author_id = authors.id;
 select * from books right outer join authors on books.author_id = authors.id;
 
@@ -114,3 +114,23 @@ begin transaction;
 rollback;
 
 select * from notes
+
+/* views */
+select books.code as code, authors.id as author_id, authors.name, books.title from books inner join authors on books.author_id = authors.id;
+
+create view summary as
+    select books.code as code, authors.id as author_id, authors.name, books.title from books inner join authors on books.author_id = authors.id;
+
+select * from summary where code = 101;
+
+/* materialized views */
+create materialized view overview as
+    select books.code as code, authors.id as author_id, authors.name, books.title from books inner join authors on books.author_id = authors.id;
+
+select * from overview;
+
+refresh materialized view overview;
+
+INSERT INTO books (code, title, published_at, description, author_id, publisher_code) VALUES
+(105, 'Another great book', '2021-01-01', 'Great one', 1, 'ADD'),
+(106, 'Amazing book!', '2019-01-01', 'Amazing one', 2, 'ADD');

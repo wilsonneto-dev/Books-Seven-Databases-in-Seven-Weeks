@@ -277,3 +277,34 @@ CREATE​ ​OR​ ​REPLACE​ ​FUNCTION​ log_event() ​RETURNS​ ​tri
 ​ 	  ​AFTER​ ​UPDATE​ ​ON​ ​events​
 ​ 	  ​FOR​ ​EACH​ ​ROW​ ​EXECUTE​ ​PROCEDURE​ log_event();
 ```
+
+### Viewing the World
+
+Wouldn’t it be great if you could use the results of a complex query just like any other table? Well, that’s exactly what VIEWs are for. Unlike stored procedures, these aren’t functions being executed but rather aliased queries. Let’s say that we wanted to see only holidays that contain the word Day and have no venue. We could create a VIEW for that like this:
+
+```sql
+create view summary as
+    select books.code as code, authors.id as author_id, authors.name, books.title from books inner join authors on books.author_id = authors.id;
+
+select * from summary where code = 101
+```
+
+### Materialized Views
+
+Though VIEWs like the holidays view mentioned previously are a convenient abstraction, they don’t yield any performance gains over the SELECT queries that they alias. If you want VIEWs that do offer such gains, you should consider creating materialized views, which are different because they’re stored on disk in a “real” table and thus yield performance gains because they restrict the number of tables that must be accessed to exactly one.
+
+You can create materialized views just like ordinary views, except with a CREATE MATERIALIZED VIEW rather than CREATE VIEW statement. Materialized view tables are populated whenever you run the REFRESH command for them, which you can automate to run at defined intervals or in response to triggers. You can also create indexes on materialized views the same way that you can on regular tables.
+
+```sql
+/* materialized views */
+create materialized view overview as
+    select books.code as code, authors.id as author_id, authors.name, books.title from books inner join authors on books.author_id = authors.id;
+
+select * from overview;
+
+refresh materialized view overview;
+
+INSERT INTO books (code, title, published_at, description, author_id, publisher_code) VALUES
+(105, 'Another great book', '2021-01-01', 'Great one', 1, 'ADD'),
+(106, 'Amazing book!', '2019-01-01', 'Amazing one', 2, 'ADD');
+```
