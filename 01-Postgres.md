@@ -308,3 +308,30 @@ INSERT INTO books (code, title, published_at, description, author_id, publisher_
 (105, 'Another great book', '2021-01-01', 'Great one', 1, 'ADD'),
 (106, 'Amazing book!', '2019-01-01', 'Amazing one', 2, 'ADD');
 ```
+
+# Day 3
+
+### SQL Standard String Matches
+
+PostgreSQL has many ways of performing text matches but the two major default methods are LIKE and regular expressions.
+
+LIKE and ILIKE are the simplest forms of text search (ILIKE is a case-insensitive version of LIKE). They are fairly universal in relational databases. LIKE compares column values against a given pattern string. The % and _ characters are wildcards: % matches any number of any characters while _ matches exactly one character.
+
+### Regex
+
+A more powerful string-matching syntax is a regular expression (regex). Regexes appear often throughout this book because many databases support them. There are entire books dedicated to writing powerful expressions—the topic is far too wide and complex to cover in depth here. Postgres conforms (mostly) to the POSIX style.
+
+In Postgres, a regular expression match is led by the ~ operator, with the optional ! (meaning not matching) and * (meaning case insensitive). To count all movies that do not begin with the, the following case-insensitive query will work. The characters inside the string are the regular expression.
+
+### Bride of Levenshtein
+
+Levenshtein is a string comparison algorithm that compares how similar two strings are by how many steps are required to change one string into another. Each replaced, missing, or added character counts as a step. The distance is the total number of steps away. In PostgreSQL, the levenshtein function is provided by the fuzzystrmatch contrib package. Say we have the string bat and the string fads.
+
+### Try a Trigram
+
+A trigram is a group of three consecutive characters taken from a string. The pg_trgm contrib module breaks a string into as many trigrams as it can.
+
+Finding a matching string is as simple as counting the number of matching trigrams. The strings with the most matches are the most similar. It’s useful for doing a search where you’re okay with either slight misspellings or even minor words missing. The longer the string, the more trigrams and the more likely a match—they’re great for something like movie titles because they have relatively similar lengths. We’ll create a trigram index against movie names to start, using Generalized Index Search Tree (GIST), a generic index API made available by the PostgreSQL engine.
+
+We’ve inched toward matching less specific inputs. LIKE and regular expressions require crafting patterns that can match strings precisely according to their format. Levenshtein distance allows you to find matches that contain minor misspellings but must ultimately be very close to the same string. Trigrams are a good choice for finding reasonable misspelled matches. Finally, full-text searching allows natural language flexibility in that it can ignore minor words such as a and the and can deal with pluralization. Sometimes we just don’t know how to spell words correctly but we know how they sound.
+

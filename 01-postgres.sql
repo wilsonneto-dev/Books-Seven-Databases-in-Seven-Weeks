@@ -113,7 +113,7 @@ begin transaction;
     delete from notes;
 rollback;
 
-select * from notes
+select * from notes;
 
 /* views */
 select books.code as code, authors.id as author_id, authors.name, books.title from books inner join authors on books.author_id = authors.id;
