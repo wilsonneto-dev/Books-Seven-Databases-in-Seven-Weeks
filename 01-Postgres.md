@@ -335,3 +335,20 @@ Finding a matching string is as simple as counting the number of matching trigra
 
 We’ve inched toward matching less specific inputs. LIKE and regular expressions require crafting patterns that can match strings precisely according to their format. Levenshtein distance allows you to find matches that contain minor misspellings but must ultimately be very close to the same string. Trigrams are a good choice for finding reasonable misspelled matches. Finally, full-text searching allows natural language flexibility in that it can ignore minor words such as a and the and can deal with pluralization. Sometimes we just don’t know how to spell words correctly but we know how they sound.
 
+
+----
+
+### Notes:
+
+An hacky to use parameters/variables as we use in SQL Server
+
+```sql
+with vars (name) as (values ('Eric Evans'))
+select
+    books.title, books.code
+from authors
+inner join books on
+    authors.id = books.author_id
+inner join vars on
+    authors.name = vars.name
+```
